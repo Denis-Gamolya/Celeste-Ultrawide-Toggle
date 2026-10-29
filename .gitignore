@@ -1,0 +1,11 @@
+bin/
+obj/
+packages/
+artifacts/
+test-saves/
+*.user
+*.dll
+*.pdb
+*.zip
+*.log
+*.bin

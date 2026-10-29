@@ -1,0 +1,5 @@
+modoptions_ultrawidetoggle_view16x9= Toggle 16:9
+modoptions_ultrawidetoggle_viewauto= Toggle Auto
+modoptions_ultrawidetoggle_view21x9= Toggle 21:9
+modoptions_ultrawidetoggle_view32x9= Toggle 32:9
+modoptions_ultrawidetoggle_view48x9= Toggle 48:9

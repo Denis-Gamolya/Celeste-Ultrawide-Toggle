@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UseAppHost>false</UseAppHost>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestoreSources>$(MSBuildProjectDirectory)\..\packages</RestoreSources>
+    <RuntimeDirectory>$(MSBuildProjectDirectory)\..\..\..\piton-runtime\shared\Microsoft.NETCore.App\8.0.15</RuntimeDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(RuntimeDirectory)\System.*.dll;$(RuntimeDirectory)\netstandard.dll;$(RuntimeDirectory)\mscorlib.dll" Exclude="$(RuntimeDirectory)\*.Native.dll" Private="false" />
+    <Compile Remove="HookTests\**\*.cs" />
+    <Compile Include="..\Source\ViewGeometry.cs" Link="ViewGeometry.cs" />
+  </ItemGroup>
+</Project>

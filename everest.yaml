@@ -1,0 +1,6 @@
+- Name: UltrawideToggle
+  Version: 1.0.2
+  DLL: Code/UltrawideToggle.dll
+  Dependencies:
+    - Name: Everest
+      Version: 1.6580.0

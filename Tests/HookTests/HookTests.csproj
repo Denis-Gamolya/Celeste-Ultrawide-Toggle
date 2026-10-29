@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UseAppHost>false</UseAppHost>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GameDirectory>$(MSBuildProjectDirectory)\..\..\..\..</GameDirectory>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <RestoreSources>$(MSBuildProjectDirectory)\..\..\packages</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(GameDirectory)\piton-runtime\shared\Microsoft.NETCore.App\8.0.15\System.*.dll;$(GameDirectory)\piton-runtime\shared\Microsoft.NETCore.App\8.0.15\netstandard.dll;$(GameDirectory)\piton-runtime\shared\Microsoft.NETCore.App\8.0.15\mscorlib.dll" Exclude="$(GameDirectory)\piton-runtime\shared\Microsoft.NETCore.App\8.0.15\*.Native.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\Celeste.dll;$(GameDirectory)\FNA.dll;$(GameDirectory)\MMHOOK_Celeste.dll;$(GameDirectory)\MonoMod.Utils.dll;$(GameDirectory)\MonoMod.RuntimeDetour.dll;$(GameDirectory)\Mono.Cecil.dll" Private="false" />
+    <Reference Include="$(MSBuildProjectDirectory)\..\..\bin\Release\net8.0\UltrawideToggle.dll" />
+  </ItemGroup>
+</Project>

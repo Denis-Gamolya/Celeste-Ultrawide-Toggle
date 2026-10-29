@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12</LangVersion>
+    <GameDirectory Condition="'$(GameDirectory)' == ''">$(MSBuildProjectDirectory)\..\..</GameDirectory>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RestoreSources Condition="'$(OfflineBuild)' == 'true'">$(MSBuildProjectDirectory)\packages</RestoreSources>
+    <!-- Offline builds use this game's .NET 8 runtime, never .NET 10 APIs. -->
+    <DisableImplicitFrameworkReferences Condition="'$(OfflineBuild)' == 'true'">true</DisableImplicitFrameworkReferences>
+    <RuntimeDirectory Condition="'$(OfflineBuild)' == 'true'">$(GameDirectory)\piton-runtime\shared\Microsoft.NETCore.App\8.0.15</RuntimeDirectory>
+    <DefineConstants Condition="'$(EnableSmoke)' == 'true'">$(DefineConstants);SMOKE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Source\**\*.cs" />
+    <Reference Include="$(GameDirectory)\Celeste.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\FNA.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\MMHOOK_Celeste.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\Mono.Cecil.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\MonoMod.Utils.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\MonoMod.RuntimeDetour.dll" Private="false" />
+    <Reference Include="$(GameDirectory)\FMOD.dll" Private="false" Condition="Exists('$(GameDirectory)\FMOD.dll')" />
+    <Reference Include="$(GameDirectory)\everest-lib\FMOD.dll" Private="false" Condition="Exists('$(GameDirectory)\everest-lib\FMOD.dll')" />
+    <Reference Include="$(RuntimeDirectory)\System.*.dll;$(RuntimeDirectory)\mscorlib.dll;$(RuntimeDirectory)\netstandard.dll" Exclude="$(RuntimeDirectory)\*.Native.dll" Private="false" Condition="'$(OfflineBuild)' == 'true'" />
+  </ItemGroup>
+</Project>
