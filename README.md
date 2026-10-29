@@ -5,9 +5,7 @@ Choose separate aspect ratios for gameplay and the main menu, switch views with
 keyboard or controller shortcuts, and see the original frame with a customizable
 boundary overlay.
 
-**[Download and Install on GameBanana](https://maddie480.ovh/celeste/gb?id=UltrawideToggle)**
-  [Report a Bug](https://github.com/Denis-Gamolya/Celeste-Ultrawide-Toggle/issues)
-  [MIT License](LICENSE)
+**[Download and Install on GameBanana](https://maddie480.ovh/celeste/gb?id=UltrawideToggle)** | [Report a Bug](https://github.com/Denis-Gamolya/Celeste-Ultrawide-Toggle/issues) | [MIT License](LICENSE)
 
 Download the mod from GameBanana using the link above. GitHub's **Download ZIP**
 contains source code, not the installable mod.
