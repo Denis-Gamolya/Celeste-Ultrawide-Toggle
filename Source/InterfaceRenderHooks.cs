@@ -33,6 +33,51 @@ internal sealed class InterfaceRenderHooks : IDisposable
                     // Cancel the HUD centering offset once for world anchors.
                     cursor.EmitDelegate<Func<Vector2, Vector2>>(AlignWorldPrompt);
                 });
+            foreach (Type type in new[] { typeof(CoreMessage), typeof(MemorialText) })
+                Patch(type, "Render", il =>
+                {
+                    var cursor = new ILCursor(il);
+                    string accessor = type == typeof(CoreMessage) ? "get_Position" : "get_X";
+                    if (!cursor.TryGotoNext(MoveType.After, i => i.MatchCallvirt<Camera>(accessor)))
+                        throw new InvalidOperationException($"{type.Name} world anchor changed");
+                    // These HUD elements already reflect around the center of
+                    // the 16:9 HUD. Supply the matching camera origin.
+                    if (type == typeof(CoreMessage))
+                        cursor.EmitDelegate<Func<Vector2, Vector2>>(p => p + new Vector2(ExtraSide, 0));
+                    else
+                        cursor.EmitDelegate<Func<float, float>>(x => x + ExtraSide);
+                });
+            Patch(typeof(Level), "Render", il =>
+            {
+                var cursor = new ILCursor(il);
+                if (!cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchCall<Vector2>("op_Addition"),
+                    i => i.MatchLdsfld(typeof(GameplayBuffers), "Level")))
+                    throw new InvalidOperationException("Mirrored level composition site changed");
+                cursor.Index--;
+                cursor.EmitDelegate<Func<Vector2, Vector2>>(p =>
+                {
+                    // The rounded-up guard column moves to the left when
+                    // SpriteEffects flips the texture. Clip it on that side.
+                    if (controller.RenderingWideLevel && SaveData.Instance?.Assists.MirrorMode == true)
+                        p.X -= controller.BufferWidth - controller.VisualWidth;
+                    return p;
+                });
+            });
+            Patch(typeof(SpotlightWipe), "Render", il =>
+            {
+                var cursor = new ILCursor(il);
+                if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdsfld<SpotlightWipe>("FocusPoint")))
+                    throw new InvalidOperationException("Spotlight wipe focus site changed");
+                cursor.EmitDelegate<Func<Vector2, Vector2>>(p =>
+                {
+                    // The wipe is projected from a 320-wide logical canvas.
+                    // Preserve a world focus point inside that projection.
+                    if (controller.RenderingWideLevel)
+                        p.X = (p.X + ExtraSide) * 320 / controller.VisualWidth;
+                    return p;
+                });
+            });
             On.Celeste.OuiMainMenu.Render += RenderMainMenu;
             Patch(typeof(TotalStrawberriesDisplay), "Render", il =>
             {
@@ -225,8 +270,16 @@ internal sealed class InterfaceRenderHooks : IDisposable
         => Matrix.CreateScale(horizontalScale, viewport.Height / 1080f, 1);
 
     internal Vector2 AlignWorldPrompt(Vector2 position)
-        => position + new Vector2(controller.RenderingWide
-            ? -(float)controller.Geometry.SideExtension : 0, 0);
+    {
+        if (!controller.RenderingWide) return position;
+        // The prompt's native mirror reflection follows this anchor. Reverse
+        // the correction before reflection so the final HUD offset cancels.
+        float side = (float)controller.Geometry.SideExtension;
+        position.X += SaveData.Instance?.Assists.MirrorMode == true ? side : -side;
+        return position;
+    }
+
+    private float ExtraSide => controller.RenderingWideLevel ? (float)controller.Geometry.SideExtension : 0;
 
     internal Vector2 MenuButtonPosition(Vector2 position, Vector2 target, Vector2 hidden)
     {

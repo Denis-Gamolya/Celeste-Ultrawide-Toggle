@@ -17,6 +17,7 @@ Run(gameDirectory);
 [MethodImpl(MethodImplOptions.NoInlining)]
 static void Run(string gameDirectory)
 {
+    NorthernLightsCompatibility.Run(gameDirectory);
     var module = new Celeste.Mod.UltrawideToggle.UltrawideModule();
     module.Load();
     module.Unload();

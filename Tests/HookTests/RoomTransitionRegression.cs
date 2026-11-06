@@ -37,6 +37,7 @@ internal static class RoomTransitionRegression
         var settings = new UltrawideSettings();
         settingsProperty.SetValue(UltrawideModule.Instance, settings);
         var savedAspect = settings.GameplayAspect;
+        var oldSave = SaveData.Instance;
         using var aspectHook = new Hook(typeof(RenderController).GetMethod("ResolveAspect", All)!,
             (Func<Func<AspectPreset, ViewGeometry>, AspectPreset, ViewGeometry>)((_, _) => new(430)));
         using var roomHook = new Hook(typeof(UltrawideModule).GetMethod("RoomKey", All)!,
@@ -44,6 +45,10 @@ internal static class RoomTransitionRegression
         try
         {
             settings.GameplayAspect = AspectPreset.Ratio21x9;
+            SaveData.Instance = New<SaveData>();
+            SaveData.Instance.Assists.MirrorMode = true;
+            Check(controller.SelectGeometry(level).Width == 430, "Mirror Mode must retain the wide aspect");
+            SaveData.Instance.Assists.MirrorMode = false;
             foreach (bool beginning in new[] { false, true })
             {
                 level.Session.StartedFromBeginning = beginning;
@@ -86,6 +91,7 @@ internal static class RoomTransitionRegression
         finally
         {
             settings.GameplayAspect = savedAspect;
+            SaveData.Instance = oldSave;
             settingsProperty.SetValue(UltrawideModule.Instance, previousSettings);
         }
         Console.WriteLine($"PASS: {assertions} Farewell room/checkpoint transition-policy assertions");

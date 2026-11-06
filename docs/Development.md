@@ -70,7 +70,8 @@ override it when building elsewhere.
 ```
 
 Offline mode compiles against the .NET 8.0.15 runtime shipped with this game
-when the net8.0 reference pack is unavailable. Release packages contain the mod DLL, metadata, dialog labels, MIT license,
-README, and validation notes. Add `-Install` while Celeste is closed to
-copy the ZIP into Mods. Remove that ZIP to uninstall.
+when the net8.0 reference pack is unavailable. The build reads the version from
+`everest.yaml` and writes `artifacts/UltrawideToggle-<version>.zip`. The ZIP
+contains the mod DLL, Everest metadata, dialog labels, changelog, and MIT license.
+Add `-Install` while Celeste is closed to copy the ZIP into `Mods`.
 

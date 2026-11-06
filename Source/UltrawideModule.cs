@@ -17,6 +17,8 @@ public sealed class UltrawideModule : EverestModule
     private EntityBoundsHooks? entityHooks;
     private InterfaceRenderHooks? interfaceHooks;
     private BlackholeBackgroundHooks? backgroundHooks;
+    private HazardVisualHooks? hazardVisualHooks;
+    private VanillaEffectHooks? vanillaEffectHooks;
     private Hook? subHudHook;
 
     public UltrawideModule() => Instance = this;
@@ -36,6 +38,8 @@ public sealed class UltrawideModule : EverestModule
             entityHooks = new EntityBoundsHooks(Renderer);
             interfaceHooks = new InterfaceRenderHooks(Renderer);
             backgroundHooks = new BlackholeBackgroundHooks(Renderer);
+            hazardVisualHooks = new HazardVisualHooks(Renderer);
+            vanillaEffectHooks = new VanillaEffectHooks(Renderer);
             On.Monocle.Engine.RenderCore += Render;
             On.Monocle.Engine.Update += Update;
             On.Celeste.HiresRenderer.Render += RenderHires;
@@ -43,7 +47,7 @@ public sealed class UltrawideModule : EverestModule
             On.Celeste.Level.Update += UpdateLevel;
             subHudHook = new Hook(typeof(SubHudRenderer).GetMethod("Render")!,
                 (Action<Action<SubHudRenderer, Scene>, SubHudRenderer, Scene>)RenderSubHud);
-            Logger.Log("UltrawideToggle", "Loaded 1.0.2; unified gameplay aspect and animated menu handoff.");
+            Logger.Log("UltrawideToggle", "Loaded vanilla visibility fixes and ultrawide Mirror Mode support.");
         }
         catch (Exception error)
         {
@@ -61,6 +65,8 @@ public sealed class UltrawideModule : EverestModule
         On.Celeste.LevelExit.Begin -= BeginExit;
         On.Celeste.Level.Update -= UpdateLevel;
         subHudHook?.Dispose();
+        vanillaEffectHooks?.Dispose();
+        hazardVisualHooks?.Dispose();
         entityHooks?.Dispose();
         backgroundHooks?.Dispose();
         interfaceHooks?.Dispose();

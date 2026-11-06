@@ -29,6 +29,7 @@ internal sealed class RenderController : IDisposable
     public int BufferWidth => Geometry.BufferWidth;
     public float VisualWidth => (float)Geometry.Width;
     public bool RenderingWide => rendering && VisualWidth > 320;
+    public bool RenderingWideLevel => RenderingWide && Engine.Scene is Level;
     public float HudLeftOffset => RenderingWide && Engine.Scene is Level
         ? -(float)Geometry.SideExtension * 6 : 0;
     public float OutputWidth => outputWidth;
@@ -130,8 +131,7 @@ internal sealed class RenderController : IDisposable
         if (level.InCutscene || level.Zoom != 1 ||
             level.ZoomTarget != 1 || level.Camera.Zoom != 1 || level.Camera.Angle != 0 ||
             level.Camera.Viewport.Width != 320 || level.Camera.Viewport.Height != 180 ||
-            level.Camera.Origin != Vector2.Zero || level.ScreenPadding != 0 ||
-            (SaveData.Instance is not null && SaveData.Instance.Assists.MirrorMode))
+            level.Camera.Origin != Vector2.Zero || level.ScreenPadding != 0)
         {
             Status = "Unsupported camera/cutscene fallback: original 16:9";
             return new(320);

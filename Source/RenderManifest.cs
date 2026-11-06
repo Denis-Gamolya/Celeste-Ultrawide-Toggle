@@ -24,7 +24,6 @@ internal static class RenderManifest
         new("Celeste.StarsBG", "Render", [new(320f, 1)]),
         new("Celeste.BirdTutorialGui", "Render", [new(320f, 1)]),
         new("Celeste.DustEdges", "BeforeRender", [new(320f, 2)]),
-        new("Celeste.SpotlightWipe", "Render", [new(320f, 1), new(1920f, 2)]),
         new("Celeste.ExitBlock", "Render", [new(320f, 1)]),
         new("Celeste.FakeWall", "Render", [new(320f, 1)]),
         new("Celeste.BloomRenderer", "Apply", [new(340f, 1)]),

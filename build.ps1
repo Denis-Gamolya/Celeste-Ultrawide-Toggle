@@ -6,19 +6,16 @@ $arguments=@('build',(Join-Path $projectDir 'UltrawideToggle.csproj'),'-c','Rele
 if($Offline){$arguments+='-p:OfflineBuild=true'}
 & dotnet @arguments
 if($LASTEXITCODE -ne 0){throw 'Build failed'}
-$stage=Join-Path $projectDir 'artifacts\package'
+$version=(Select-String -LiteralPath (Join-Path $projectDir 'everest.yaml') -Pattern '^\s+Version:\s+(\S+)' | Select-Object -First 1).Matches[0].Groups[1].Value
+$stage=Join-Path $projectDir "artifacts\package-$version"
 New-Item -ItemType Directory -Path (Join-Path $stage 'Code') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectDir 'bin\Release\net8.0\UltrawideToggle.dll') -Destination (Join-Path $stage 'Code\UltrawideToggle.dll') -Force
 Copy-Item -LiteralPath (Join-Path $projectDir 'everest.yaml') -Destination $stage -Force
-Copy-Item -LiteralPath (Join-Path $projectDir 'docs\Player-README.txt') -Destination (Join-Path $stage 'README.txt') -Force
-$oldReadme=Join-Path $stage 'README.md'
-if(Test-Path -LiteralPath $oldReadme){Remove-Item -LiteralPath $oldReadme}
+Copy-Item -LiteralPath (Join-Path $projectDir 'CHANGELOG.md') -Destination $stage -Force
 Copy-Item -LiteralPath (Join-Path $projectDir 'LICENSE') -Destination $stage -Force
-New-Item -ItemType Directory -Path (Join-Path $stage 'docs') -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $projectDir 'docs\Validation.md') -Destination (Join-Path $stage 'docs\Validation.md') -Force
 New-Item -ItemType Directory -Path (Join-Path $stage 'Dialog') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectDir 'Dialog\English.txt') -Destination (Join-Path $stage 'Dialog\English.txt') -Force
-$archive=Join-Path $projectDir 'artifacts\UltrawideToggle-1.0.2.zip'
+$archive=Join-Path $projectDir "artifacts\UltrawideToggle-$version.zip"
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -Force
 if($Install){
  $destination=Join-Path $gameDir 'Mods\UltrawideToggle.zip'

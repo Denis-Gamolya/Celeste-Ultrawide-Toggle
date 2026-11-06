@@ -32,8 +32,9 @@ is now on screen. This mod does not spawn projectiles early or predict them.
 - **Per-room 16:9 overrides:** Can remember specific rooms that should always use 16:9
 - **Configurable 16:9 boundary:** five colors, seven thicknesses, contrasting
   outlines, opacity, three border styles, and extended view dimming
-- **Ultrawide presentation fixes:** aligned berry/timer HUD, world prompts,
-  spinner visibility, Farewell backgrounds, menus, and exit transitions.
+- **Ultrawide presentation fixes:** wider hazard visibility, backgrounds, weather,
+  reflections, and screen wipes, plus aligned world prompts and HUD.
+- **Mirror Mode:** vanilla mirrored gameplay supports the selected wide aspect.
 
 ## Screenshots
 
@@ -47,11 +48,11 @@ The custom character skin shown is not included.
 ## Installation
 
 Requires **Celeste with Everest 1.6580.0 or newer**. Tested on Windows with
-Celeste 1.4.0.0 and Everest build 6580. Current mod version: **1.0.2**.
+Celeste 1.4.0.0 and Everest build 6580. Current mod version: **1.1.2**.
 
 1. Open the [GameBanana download page](https://maddie480.ovh/celeste/gb?id=UltrawideToggle).
 2. Use its **Olympus / Everest one-click install** button. For manual installation,
-   close Celeste and place `UltrawideToggle-1.0.2.zip` in the game's `Mods` folder.
+   close Celeste and place `UltrawideToggle-1.1.2.zip` in the game's `Mods` folder.
    Keep the ZIP zipped.
 3. Launch Celeste and open **Mod Options > Ultrawide Toggle**.
 4. Choose your **Gameplay Aspect Ratio** and **Main Menu Aspect Ratio**.
@@ -99,7 +100,7 @@ extra side areas.
 
 ## Compatibility
 
-- Zoomed/rotated cameras, cutscenes, mirror assist, screen padding, and custom
+- Zoomed/rotated cameras, cutscenes, screen padding, and custom
   camera viewports/origins temporarily use 16:9. Normal room scrolling stays wide.
 - Some maps have unfinished scenery beyond their intended view.
 - Restart the room to apply entity rule changes
@@ -117,8 +118,8 @@ With a .NET SDK installed, run:
 ```
 
 The offline build uses the .NET 8 runtime supplied by the tested Everest install
-when reference packs are unavailable. The automated suite passes **1,954
-assertions**; that does not replace visual checks on each rendering setup.
+when reference packs are unavailable. The test suite covers rendering and camera
+behavior and checks Northern Lights compatibility when MaxHelpingHand is installed.
 
 See [development and architecture](docs/Development.md) and
 [release history](CHANGELOG.md).

@@ -15,6 +15,7 @@ internal static class VisualRegression
     internal static void Run()
     {
         var controller = new RenderController();
+        using var widthHooks = new RenderHooks(controller);
         using var hooks = new InterfaceRenderHooks(controller);
         var level = New<Level>();
         level.Camera = new Camera(320, 180);
@@ -32,6 +33,7 @@ internal static class VisualRegression
         Vector2 captured = default;
         var oldMatrix = Engine.ScreenMatrix;
         var oldAtlas = GFX.Gui;
+        var oldSave = SaveData.Instance;
         using var atlasHook = new Hook(typeof(Atlas).GetProperty("Item")!.GetMethod!,
             (Func<Func<Atlas, string, MTexture>, Atlas, string, MTexture>)((_, _, _) => New<MTexture>()));
         using var highlightHook = new Hook(uiType.GetProperty("Highlighted", All)!.GetMethod!,
@@ -43,6 +45,7 @@ internal static class VisualRegression
         try
         {
             GFX.Gui = New<Atlas>();
+            SaveData.Instance = New<SaveData>();
             foreach (double width in new[] { 320d, 430d, 1280d / 3, 640d, 960d })
             {
                 var geometry = new ViewGeometry(width);
@@ -53,6 +56,11 @@ internal static class VisualRegression
                 controller.RenderCenteredHud(() => ui.Render());
                 float expected = (100 - MathF.Floor(level.Camera.X)) * 6;
                 Check(Math.Abs(captured.X - expected) < .001f, "Actual interaction prompt must cancel duplicate HUD translation");
+                SaveData.Instance.Assists.MirrorMode = true;
+                controller.RenderCenteredHud(() => ui.Render());
+                Check(Math.Abs(captured.X - (geometry.HiresWidth - expected)) < .001,
+                    $"Mirrored prompt at {width}: expected {geometry.HiresWidth - expected}, drew at {captured.X}");
+                SaveData.Instance.Assists.MirrorMode = false;
 
                 var menu = New<OuiMainMenu>();
                 var button = New<MainMenuClimb>();
@@ -80,8 +88,56 @@ internal static class VisualRegression
                 CheckSpinners(geometry);
             }
         }
-        finally { Engine.ScreenMatrix = oldMatrix; GFX.Gui = oldAtlas; }
-        Console.WriteLine($"PASS: {assertions} actual prompt/menu rendering and spinner visual-state assertions");
+        finally { Engine.ScreenMatrix = oldMatrix; GFX.Gui = oldAtlas; SaveData.Instance = oldSave; }
+        CheckLava(controller, level);
+        Console.WriteLine($"PASS: {assertions} prompt, menu, spinner, and lava visual-state assertions");
+    }
+
+    private static void CheckLava(RenderController controller, Level level)
+    {
+        using var sceneHook = new Hook(typeof(Engine).GetProperty("Scene")!.GetMethod!,
+            (Func<Func<Scene>, Scene>)(_ => level));
+        using var atlasHook = new Hook(typeof(Atlas).GetMethod(nameof(Atlas.GetAtlasSubtextures))!,
+            (Func<Func<Atlas, string, List<MTexture>>, Atlas, string, List<MTexture>>)((_, _, _) => [New<MTexture>()]));
+        using var hooks = new HazardVisualHooks(controller);
+        var render = typeof(HazardVisualHooks).GetMethod("RenderLava", All)!
+            .CreateDelegate<Action<On.Celeste.LavaRect.orig_Render, LavaRect>>(hooks);
+        var update = typeof(HazardVisualHooks).GetMethod("UpdateLava", All)!
+            .CreateDelegate<Action<On.Celeste.LavaRect.orig_Update, LavaRect>>(hooks);
+        var atlas = GFX.Game;
+        var random = Calc.Random;
+        try
+        {
+            GFX.Game = new Atlas();
+            foreach (Entity owner in new Entity[] { New<RisingLava>(), New<SandwichLava>(), New<Entity>() })
+            {
+                var surface = new LavaRect(400, 100, 4) { Position = new Vector2(-40, 16) };
+                typeof(Component).GetProperty("Entity")!.SetValue(surface, owner);
+                foreach (double width in new[] { 420d, 430d, 1280d / 3, 640d, 960d, 320d })
+                {
+                    var geometry = new ViewGeometry(width);
+                    typeof(RenderController).GetProperty("Geometry")!.SetValue(controller, geometry);
+                    bool wide = width > 320 && owner.GetType() != typeof(Entity);
+                    float side = wide ? (float)geometry.SideExtension : 0;
+                    var expectedRandom = new Random(123);
+                    Calc.Random = new Random(123);
+                    surface.SurfaceColor = Color.Blue;
+                    render(drawn =>
+                    {
+                        Check(ReferenceEquals(drawn, surface) != wide, "Only wide vanilla lava should use a separate surface");
+                        Check(drawn.Width == 400 + side * 2 && drawn.Position == new Vector2(-40 - side, 16),
+                            $"{owner.GetType().Name} art must preserve its margins at width {width}");
+                        Check(drawn.SurfaceColor == surface.SurfaceColor, "Wide lava should follow the native color");
+                    }, surface);
+                    update(_ => Calc.Random.Next(), surface);
+                    expectedRandom.Next();
+                    Check(Calc.Random.Next() == expectedRandom.Next(), "Preview resize and animation must preserve the native RNG stream");
+                    Check(surface.Width == 400 && surface.Position == new Vector2(-40, 16),
+                        "The original lava surface must preserve its geometry");
+                }
+            }
+        }
+        finally { GFX.Game = atlas; Calc.Random = random; }
     }
 
     private static void CheckSpinners(ViewGeometry geometry)

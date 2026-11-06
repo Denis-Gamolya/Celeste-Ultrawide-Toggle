@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.1.2
+
+- Extended the artwork for Rising Lava and both the upper and lower surfaces
+  of Sandwich Lava across the wider view. The lava keeps its original
+  collision bounds and movement.
+
+## 1.1.1
+
+- Fixed a startup crash caused by a conflict with MaxHelpingHand's custom
+  Northern Lights colors. The two hooks now work in either load order.
+
+## 1.1.0
+
+### Added
+
+- Vanilla Mirror Mode now uses the selected aspect ratio during regular
+  gameplay. Cutscenes and zoomed camera views can still use 16:9.
+- Lightning, dust bunnies, and animated Seeker Barrier outlines now draw in
+  the extra side areas. Lightning collision and dust bunny activation still
+  use the original camera.
+- Rain, godrays, petals, wind snow, planets, and both starfield backdrops now
+  cover wider views, including 32:9 and 48:9. Star Jump Block fills, glass block
+  effects, mirror reflections, and Northern Lights also scale to the view.
+
+### Fixed
+
+- Aligned interaction and tutorial prompts, memorial and Core text, and the
+  Spotlight Wipe's focus with the wider view.
+- Extended the Starfield Wipe, heart formation backdrop, and overlay fades to
+  the edges of the wider view.
+- Corrected the placement of Summit clouds, the large waterfall, and Seeker
+  distortion relative to the wider camera.
+
 ## 1.0.2
 
 The 16:9 boundary uses joined frame rings instead of separate crossing edge
