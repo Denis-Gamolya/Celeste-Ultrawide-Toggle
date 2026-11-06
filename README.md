@@ -48,11 +48,11 @@ The custom character skin shown is not included.
 ## Installation
 
 Requires **Celeste with Everest 1.6580.0 or newer**. Tested on Windows with
-Celeste 1.4.0.0 and Everest build 6580. Current mod version: **1.1.4**.
+Celeste 1.4.0.0 and Everest build 6580. Current mod version: **1.1.5**.
 
 1. Open the [GameBanana download page](https://maddie480.ovh/celeste/gb?id=UltrawideToggle).
 2. Use its **Olympus / Everest one-click install** button. For manual installation,
-   close Celeste and place `UltrawideToggle-1.1.4.zip` in the game's `Mods` folder.
+   close Celeste and place `UltrawideToggle-1.1.5.zip` in the game's `Mods` folder.
    Keep the ZIP zipped.
 3. Launch Celeste and open **Mod Options > Ultrawide Toggle**.
 4. Choose your **Gameplay Aspect Ratio** and **Main Menu Aspect Ratio**.
@@ -80,9 +80,9 @@ Bind **Toggle 16:9** to return to the original view.
 room. This is saved and applied if you re-enter a room.
 
 **Farewell Bird Fix** keeps regular Farewell bird grabs ultrawide by
-skipping their brief camera zoom. It's on by default. Turn it off to play
-the original zoom, which briefly switches to 16:9. **Restore Original Entity
-Rules** also turns this fix off.
+skipping their brief camera zoom. It's off by default, so the original zoom
+plays and briefly switches to 16:9. **Restore Original Entity Rules** turns
+this fix off.
 
 ## 16:9 boundary
 

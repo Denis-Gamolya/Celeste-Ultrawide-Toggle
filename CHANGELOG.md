@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.5
+
+- **Farewell Bird Fix** now defaults to off.
+- Keyboard and controller rebinding overlays dim the full ultrawide view.
+
 ## 1.1.4
 
 - Renamed the toggles to **Original Snowball Boundary**, **Original Oshiro

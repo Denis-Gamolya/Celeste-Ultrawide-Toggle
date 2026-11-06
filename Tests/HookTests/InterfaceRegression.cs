@@ -65,7 +65,7 @@ internal static class InterfaceRegression
         CheckReferenceBoundary();
         CheckDrawing();
         CheckWipeProjection();
-        Console.WriteLine($"PASS: {assertions} startup/exit, title-fade, wipe-boundary, and binding-label assertions");
+        Console.WriteLine($"PASS: {assertions} startup/exit, interface fade, wipe-boundary, and binding-label assertions");
     }
 
     private static void CheckReferenceBoundary()
@@ -93,7 +93,10 @@ internal static class InterfaceRegression
         var wipe = New<FadeWipe>();
         Set(wipe, "vertexBuffer", new VertexPositionColor[6]);
         wipe.Percent = .5f;
-        Vector4 rectangle = default;
+        TextMenu[] configs = [New<KeyboardConfigUI>(), New<ButtonConfigUI>()];
+        foreach (TextMenu config in configs)
+            Set(config, "remappingEase", 1f);
+        List<Vector4> rectangles = [];
         VertexPositionColor[] vertices = [];
         using var rectHook = new Hook(typeof(Draw).GetMethod("Rect",
             [typeof(float), typeof(float), typeof(float), typeof(float), typeof(Color)])!,
@@ -101,31 +104,53 @@ internal static class InterfaceRegression
                 ((_, x, y, width, height, _) =>
                 {
                     Vector2 origin = Vector2.Transform(new Vector2(x, y), Engine.ScreenMatrix);
-                    rectangle = new Vector4(origin.X, origin.Y, width, height);
+                    rectangles.Add(new Vector4(origin.X, origin.Y, width, height));
                 }));
         using var fontHook = new Hook(typeof(ActiveFont).GetMethod("Draw",
             [typeof(string), typeof(Vector2), typeof(Vector2), typeof(Vector2), typeof(Color)])!,
             (Action<Action<string, Vector2, Vector2, Vector2, Color>,
                 string, Vector2, Vector2, Vector2, Color>)((_, _, _, _, _, _) => { }));
+        using var menuHook = new Hook(typeof(TextMenu).GetMethod("Render", Type.EmptyTypes)!,
+            (Action<Action<TextMenu>, TextMenu>)((_, _) => { }));
+        using var dialogHook = new Hook(typeof(Dialog).GetMethod("Get", [typeof(string), typeof(Language)])!,
+            (Func<Func<string, Language, string>, string, Language, string>)((_, key, _) => key));
+        var gamepads = new MInput.GamePadData[Input.Gamepad + 1];
+        gamepads[Input.Gamepad] = New<MInput.GamePadData>();
+        gamepads[Input.Gamepad].Attached = true;
+        var gamepadsProperty = typeof(MInput).GetProperty("GamePads")!;
+        var savedGamepads = MInput.GamePads;
         using var wipeHook = new Hook(typeof(ScreenWipe).GetMethod("DrawPrimitives", All)!,
             (Action<Action<VertexPositionColor[]>, VertexPositionColor[]>)
                 ((_, value) => vertices = value));
         var savedMatrix = Engine.ScreenMatrix;
         try
         {
+            gamepadsProperty.SetValue(null, gamepads);
             Engine.ScreenMatrix = Matrix.Identity;
             foreach (double width in new[] { 320d, 430d, 1280d / 3, 640d })
             {
                 typeof(RenderController).GetProperty("Geometry")!.SetValue(controller, new ViewGeometry(width));
                 Set(controller, "outputWidth", (float)(width * 6));
                 Set(controller, "rendering", true);
+                rectangles.Clear();
                 controller.RenderCenteredHud(() => typeof(OuiTitleScreen)
                     .GetMethod("orig_Render", All)!.Invoke(title, null));
+                Vector4 rectangle = rectangles[^1];
                 Check(Math.Abs(rectangle.X + 10) < .001f &&
                     Math.Abs(rectangle.X + rectangle.Z - (width * 6 + 10)) < .001,
                     "Actual title fade must cover both ultrawide edges");
                 Check(rectangle.Y == -10 && rectangle.W == 1100,
                     "Title fade must retain its vertical bounds");
+                foreach (TextMenu config in configs)
+                {
+                    rectangles.Clear();
+                    controller.RenderCenteredHud(config.Render);
+                    Check(rectangles.Count == 2 && rectangles.All(rect =>
+                        Math.Abs(rect.X + 10) < .001f &&
+                        Math.Abs(rect.X + rect.Z - (width * 6 + 10)) < .001 &&
+                        rect.Y == -10 && rect.W == 1100),
+                        $"{config.GetType().Name} background and rebind fade must cover both screen edges");
+                }
                 wipe.Render(null!);
                 Check(vertices.Min(v => v.Position.X) == -10 &&
                     vertices.Max(v => v.Position.X) == 1930,
@@ -135,7 +160,11 @@ internal static class InterfaceRegression
                     "Wipe must retain its vertical extent");
             }
         }
-        finally { Engine.ScreenMatrix = savedMatrix; }
+        finally
+        {
+            Engine.ScreenMatrix = savedMatrix;
+            gamepadsProperty.SetValue(null, savedGamepads);
+        }
     }
 
     private static void CheckWipeProjection()

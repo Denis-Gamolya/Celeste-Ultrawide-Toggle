@@ -87,7 +87,7 @@ public sealed class UltrawideSettings : EverestModuleSettings
     public bool PreserveSnowballs { get; set; } = true;
     public bool PreserveOshiro { get; set; } = true;
     public bool PreserveBossShots { get; set; } = true;
-    public bool SkipFarewellBirdZoom { get; set; } = true;
+    public bool SkipFarewellBirdZoom { get; set; }
     [SettingName("modoptions_ultrawidetoggle_view16x9")]
     public ButtonBinding View16x9 { get; set; } = new();
     [SettingName("modoptions_ultrawidetoggle_viewauto")]

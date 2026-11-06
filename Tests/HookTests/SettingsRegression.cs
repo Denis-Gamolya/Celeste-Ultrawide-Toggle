@@ -50,6 +50,7 @@ internal static class SettingsRegression
         settings.PreserveSnowballs = false;
         settings.PreserveOshiro = false;
         settings.PreserveBossShots = false;
+        settings.SkipFarewellBirdZoom = true;
         UltrawideModule.RestoreEntityRules(settings, snowballs, oshiro, shots, bird);
         Check(settings.PreserveSnowballs && settings.PreserveOshiro && settings.PreserveBossShots,
             "Restore must update the underlying entity policies");

@@ -110,8 +110,9 @@ internal static class RoomTransitionRegression
             .CreateDelegate<Func<IEnumerator, object, IEnumerator>>(hooks);
         var original = new object[] { new() }.GetEnumerator();
         var savedArea = level.Session.Area;
-        Check(settings.SkipFarewellBirdZoom, "Farewell bird zoom skipping defaults to On");
+        Check(!settings.SkipFarewellBirdZoom, "Farewell bird zoom skipping defaults to Off");
         level.Session.Area = new AreaKey(10);
+        settings.SkipFarewellBirdZoom = true;
         var fling = new object();
         Check(!zoomIn(original, fling).MoveNext(), "Ultrawide Farewell bird zoom-in should be skipped");
         settings.SkipFarewellBirdZoom = false;

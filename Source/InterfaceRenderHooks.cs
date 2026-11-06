@@ -200,8 +200,10 @@ internal sealed class InterfaceRenderHooks : IDisposable
                 }
                 Require(count, 1, "menu snow coverage");
             });
-            PatchTitleFades("orig_Render", 1);
-            PatchTitleFades("Render", 3);
+            PatchFullscreenFades(typeof(OuiTitleScreen), "orig_Render", 1);
+            PatchFullscreenFades(typeof(OuiTitleScreen), "Render", 3);
+            PatchFullscreenFades(typeof(KeyboardConfigUI), "Render", 5);
+            PatchFullscreenFades(typeof(ButtonConfigUI), "Render", 5);
             Patch(typeof(TextMenuExt.SubMenu), "Render", BoundaryMenu.PatchArrow);
             Patch(typeof(ScreenWipe), "DrawPrimitives", il =>
             {
@@ -240,9 +242,9 @@ internal sealed class InterfaceRenderHooks : IDisposable
         catch { Dispose(); throw; }
     }
 
-    private void PatchTitleFades(string method, int expectedCalls)
+    private void PatchFullscreenFades(Type type, string method, int expectedCalls)
     {
-        Patch(typeof(OuiTitleScreen), method, il =>
+        Patch(type, method, il =>
         {
             var cursor = new ILCursor(il);
             int count = 0;
@@ -253,15 +255,14 @@ internal sealed class InterfaceRenderHooks : IDisposable
                 cursor.EmitDelegate<Action<float, float, float, float, Color>>(
                     (x, y, width, height, color) =>
                     {
-                        // Only full-screen fades expand. The Everest restart
-                        // progress bar in the same method retains its size.
+                        // Keep progress bars and other smaller rectangles centered at their native size.
                         float extra = controller.RenderingWide && width >= 1920
                             ? controller.OutputWidth - 1920 : 0;
                         Draw.Rect(x - extra / 2, y, width + extra, height, color);
                     });
                 count++;
             }
-            Require(count, expectedCalls, $"title {method} fade calls");
+            Require(count, expectedCalls, $"{type.Name}.{method} fade calls");
         });
     }
 
