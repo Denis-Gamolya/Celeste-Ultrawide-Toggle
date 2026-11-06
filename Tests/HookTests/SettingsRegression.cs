@@ -45,14 +45,18 @@ internal static class SettingsRegression
         var snowballs = (TextMenu.OnOff)RuntimeHelpers.GetUninitializedObject(typeof(TextMenu.OnOff));
         var oshiro = (TextMenu.OnOff)RuntimeHelpers.GetUninitializedObject(typeof(TextMenu.OnOff));
         var shots = (TextMenu.OnOff)RuntimeHelpers.GetUninitializedObject(typeof(TextMenu.OnOff));
+        var bird = (TextMenu.OnOff)RuntimeHelpers.GetUninitializedObject(typeof(TextMenu.OnOff));
+        bird.Index = 1;
         settings.PreserveSnowballs = false;
         settings.PreserveOshiro = false;
         settings.PreserveBossShots = false;
-        UltrawideModule.RestoreEntityRules(settings, snowballs, oshiro, shots);
+        UltrawideModule.RestoreEntityRules(settings, snowballs, oshiro, shots, bird);
         Check(settings.PreserveSnowballs && settings.PreserveOshiro && settings.PreserveBossShots,
             "Restore must update the underlying entity policies");
         Check(snowballs.Index == 1 && oshiro.Index == 1 && shots.Index == 1,
             "Restore must immediately update all three displayed switches");
+        Check(!settings.SkipFarewellBirdZoom && bird.Index == 0,
+            "Restore must turn the bird fix off in the settings and the menu");
         settings.View2560x1080.Keys.Add(Microsoft.Xna.Framework.Input.Keys.F8);
         settings.View3440x1440.Keys.Add(Microsoft.Xna.Framework.Input.Keys.F8);
         settings.View3840x1600.Buttons.Add(Microsoft.Xna.Framework.Input.Buttons.LeftShoulder);

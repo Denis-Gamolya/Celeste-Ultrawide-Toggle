@@ -134,18 +134,19 @@ public sealed class UltrawideModule : EverestModule
         AddAspectSlider(menu, "Main Menu Aspect Ratio", AspectPresets.Menus,
             Settings.MenuAspect, value => Settings.MenuAspect = value);
         menu.Add(BoundaryMenu.Create(Settings));
-
-        var snowballs = new TextMenu.OnOff("Original Snowball Spawn/Reset", Settings.PreserveSnowballs);
-        var oshiro = new TextMenu.OnOff("Original Oshiro Attack Boundaries", Settings.PreserveOshiro);
-        var shots = new TextMenu.OnOff("Original Boss-Shot Lifetime", Settings.PreserveBossShots);
+        var snowballs = new TextMenu.OnOff("Original Snowball Boundary", Settings.PreserveSnowballs);
+        var oshiro = new TextMenu.OnOff("Original Oshiro Boundary", Settings.PreserveOshiro);
+        var shots = new TextMenu.OnOff("Original Badeline Projectile Boundary", Settings.PreserveBossShots);
+        var bird = new TextMenu.OnOff("Farewell Bird Fix", Settings.SkipFarewellBirdZoom);
+        menu.Add(new TextMenu.Button("Restore Original Entity Rules").Pressed(() =>
+        {
+            RestoreEntityRules(Settings, snowballs, oshiro, shots, bird);
+            SaveSettings();
+        }));
         menu.Add(snowballs.Change(value => Settings.PreserveSnowballs = value));
         menu.Add(oshiro.Change(value => Settings.PreserveOshiro = value));
         menu.Add(shots.Change(value => Settings.PreserveBossShots = value));
-        menu.Add(new TextMenu.Button("Restore Original Entity Rules").Pressed(() =>
-        {
-            RestoreEntityRules(Settings, snowballs, oshiro, shots);
-            SaveSettings();
-        }));
+        menu.Add(bird.Change(value => Settings.SkipFarewellBirdZoom = value));
         if (Engine.Scene is Level level)
         {
             var key = RoomKey(level);
@@ -187,15 +188,17 @@ public sealed class UltrawideModule : EverestModule
     }
 
     internal static void RestoreEntityRules(UltrawideSettings settings,
-        TextMenu.OnOff snowballs, TextMenu.OnOff oshiro, TextMenu.OnOff shots)
+        TextMenu.OnOff snowballs, TextMenu.OnOff oshiro, TextMenu.OnOff shots, TextMenu.OnOff bird)
     {
         settings.PreserveSnowballs = true;
         settings.PreserveOshiro = true;
         settings.PreserveBossShots = true;
+        settings.SkipFarewellBirdZoom = false;
         // OnOff stores its displayed value independently from the settings.
         snowballs.Index = 1;
         oshiro.Index = 1;
         shots.Index = 1;
+        bird.Index = 0;
     }
 
     internal static string RoomKey(Level level)

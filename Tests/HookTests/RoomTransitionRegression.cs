@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Celeste;
@@ -45,6 +46,7 @@ internal static class RoomTransitionRegression
         try
         {
             settings.GameplayAspect = AspectPreset.Ratio21x9;
+            CheckBirdZoom(controller, level, settings);
             SaveData.Instance = New<SaveData>();
             SaveData.Instance.Assists.MirrorMode = true;
             Check(controller.SelectGeometry(level).Width == 430, "Mirror Mode must retain the wide aspect");
@@ -95,6 +97,39 @@ internal static class RoomTransitionRegression
             settingsProperty.SetValue(UltrawideModule.Instance, previousSettings);
         }
         Console.WriteLine($"PASS: {assertions} Farewell room/checkpoint transition-policy assertions");
+    }
+
+    private static void CheckBirdZoom(RenderController controller, Level level, UltrawideSettings settings)
+    {
+        using var sceneHook = new Hook(typeof(Engine).GetProperty("Scene")!.GetMethod!,
+            (Func<Func<Scene>, Scene>)(_ => level));
+        using var hooks = new EntityBoundsHooks(controller);
+        var zoomIn = typeof(EntityBoundsHooks).GetMethod("BirdZoomIn", All)!
+            .CreateDelegate<Func<IEnumerator, object, IEnumerator>>(hooks);
+        var zoomOut = typeof(EntityBoundsHooks).GetMethod("BirdZoomOut", All)!
+            .CreateDelegate<Func<IEnumerator, object, IEnumerator>>(hooks);
+        var original = new object[] { new() }.GetEnumerator();
+        var savedArea = level.Session.Area;
+        Check(settings.SkipFarewellBirdZoom, "Farewell bird zoom skipping defaults to On");
+        level.Session.Area = new AreaKey(10);
+        var fling = new object();
+        Check(!zoomIn(original, fling).MoveNext(), "Ultrawide Farewell bird zoom-in should be skipped");
+        settings.SkipFarewellBirdZoom = false;
+        Check(!zoomOut(original, fling).MoveNext(), "A skipped zoom must stay paired if the toggle changes mid-fling");
+        fling = new object();
+        Check(ReferenceEquals(zoomIn(original, fling), original) && ReferenceEquals(zoomOut(original, fling), original),
+            "Turning off the toggle should preserve both original zooms");
+        settings.SkipFarewellBirdZoom = true;
+        settings.GameplayAspect = AspectPreset.Original16x9;
+        Check(ReferenceEquals(zoomIn(original, new object()), original), "16:9 should preserve the original zoom");
+        settings.GameplayAspect = AspectPreset.Ratio21x9;
+        string room = UltrawideModule.RoomKey(level);
+        settings.OriginalViewRooms.Add(room);
+        Check(ReferenceEquals(zoomIn(original, new object()), original), "A 16:9 room override should preserve the original zoom");
+        settings.OriginalViewRooms.Remove(room);
+        level.Session.Area = new AreaKey(1);
+        Check(ReferenceEquals(zoomIn(original, new object()), original), "Birds outside Farewell should keep the original zoom");
+        level.Session.Area = savedArea;
     }
 
     private static T New<T>() where T : class => (T)RuntimeHelpers.GetUninitializedObject(typeof(T));

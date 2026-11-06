@@ -1,5 +1,5 @@
 - Name: UltrawideToggle
-  Version: 1.1.2
+  Version: 1.1.4
   DLL: Code/UltrawideToggle.dll
   Dependencies:
     - Name: Everest

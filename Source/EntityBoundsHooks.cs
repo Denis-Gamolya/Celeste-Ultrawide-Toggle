@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
@@ -16,6 +17,7 @@ internal sealed class EntityBoundsHooks : IDisposable
 {
     private sealed class Policy { public bool Original = true; }
     private readonly ConditionalWeakTable<Entity, Policy> policies = new();
+    private readonly ConditionalWeakTable<object, Level> skippedBirdZooms = new();
     private readonly List<ILHook> hooks = new();
     private readonly RenderController renderer;
     private const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic |
@@ -51,6 +53,7 @@ internal sealed class EntityBoundsHooks : IDisposable
                 }
                 if (count != 1) throw new InvalidOperationException("Boss-shot visibility shape changed");
             }));
+            PatchBirdZoom();
         }
         catch { Dispose(); throw; }
     }
@@ -110,6 +113,38 @@ internal sealed class EntityBoundsHooks : IDisposable
             point.X <= level.Camera.X + 320 + extra + padding &&
             point.Y >= level.Camera.Y - padding && point.Y <= level.Camera.Y + 180 + padding;
     }
+
+    private void PatchBirdZoom()
+    {
+        var routine = typeof(FlingBird).GetMethod("DoFlingRoutine", All)!;
+        var stateMachine = routine.GetCustomAttribute<IteratorStateMachineAttribute>()!.StateMachineType;
+        hooks.Add(new ILHook(stateMachine.GetMethod("MoveNext", All)!, il =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(MoveType.After, instruction => instruction.MatchCallvirt<Level>(nameof(Level.ZoomTo))))
+                throw new InvalidOperationException("Farewell bird zoom-in site changed");
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<IEnumerator, object, IEnumerator>>(BirdZoomIn);
+            if (!cursor.TryGotoNext(MoveType.After, instruction => instruction.MatchCallvirt<Level>(nameof(Level.ZoomBack))))
+                throw new InvalidOperationException("Farewell bird zoom-out site changed");
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<IEnumerator, object, IEnumerator>>(BirdZoomOut);
+        }));
+    }
+
+    private IEnumerator BirdZoomIn(IEnumerator zoom, object fling)
+    {
+        if (!UltrawideModule.Settings.SkipFarewellBirdZoom || Engine.Scene is not Level level ||
+            level.Session.Area.ID != 10 || renderer.SelectGeometry(level).Width <= ViewGeometry.ReferenceWidth)
+            return zoom;
+
+        // Keep both ends of the zoom paired even if the player changes aspect mid-fling.
+        skippedBirdZooms.Add(fling, level);
+        return Array.Empty<object>().GetEnumerator();
+    }
+
+    private IEnumerator BirdZoomOut(IEnumerator zoom, object fling)
+        => skippedBirdZooms.Remove(fling) ? Array.Empty<object>().GetEnumerator() : zoom;
 
     public void Dispose()
     {

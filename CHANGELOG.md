@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.4
+
+- Renamed the toggles to **Original Snowball Boundary**, **Original Oshiro
+  Boundary**, **Original Badeline Projectile Boundary**, and **Farewell Bird
+  Fix**.
+- Moved **Restore Original Entity Rules** directly below **16:9 Boundary**
+  and above the entity toggles.
+
+## 1.1.3
+
+- Added **Skip Farewell Bird Zoom**, enabled by default. Regular Farewell bird
+  grabs stay ultrawide by skipping the brief camera zoom. Gameplay in 16:9,
+  including rooms set to always use 16:9, keeps the original zoom.
+
 ## 1.1.2
 
 - Extended the artwork for Rising Lava and both the upper and lower surfaces
